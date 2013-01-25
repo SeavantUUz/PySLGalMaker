@@ -19,27 +19,33 @@ Term:
   I use the term "frame" to refer each time things on you game_screen.What content sound,background,text maybe buttons.
 
 Gammers
-  you can also read the script.sanae ---- anthor.
+
+  you can also read the script.sanae ---- author.
   
   0.FRAME
+  
   we split two frame by whiteline
   
   1.INDEX
+  
   which is the frame's index,
   always number,be careful,you must write index one by one,no jump----except choice-button
   
   2.BACKGROUND
+  
   referring the background of you game_screen
   always like this:
   [background = 'xxxx.xxx']
   xxxx.xxx is a picture's name,always in BG folder.
   
   3.BGM
+  
   the bgm of the game
   [BGM = 'xxxx.xxx']
   xxxx.xxx is a sound's name.In windows,the format are .mp3 or .wav.In Linux are .ogg or .wav
   
   4.TEXT
+  
   the text show on the screen
   gammer like this:
   <xxxxxx>
