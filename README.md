@@ -74,3 +74,4 @@ Gammers
   choose munohana->50
   choose aoi->60
   [/choices]
+  
