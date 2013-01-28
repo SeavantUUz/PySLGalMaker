@@ -8,6 +8,8 @@ SCREENWIDTH = 800
 SCREENHEIGHT = 600
 TEXTRECTHEIGHT = 160
 LINENUMBER = 35 
+## collect all narrow char...you can add it
+CHAR = u'''abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-=[]:;{}+_,.?!()@<>""''/\\'''
 OFFY = 10
 OFFX = 35
 VSIZE = 30
@@ -232,13 +234,30 @@ class NodeItem(object):
         
         self.ChoiceButtons = dir_button
 
-
-
+    ## use the function to align lines.In face,the function is ugly...
+    def textToList(self,text):
+        width = 0
+        textList = []
+        textStr = ''
+        for i in text:
+            if i in CHAR or i.isdigit() or i.isspace():
+                width += 1
+            else:
+                width += 2
+            textStr += i
+            if width >= LINENUMBER * 2 - 1:
+                textList.append(textStr)
+                textStr = ''
+                width = 0
+        textList.append(textStr)
+        return textList
+        
     def __updateText(self,name,text):
         self.TextBox.fill(self.bgColor)
         name = name.decode(DECODE)
         text = text.decode(DECODE)
-        textLines = [text[i:i+LINENUMBER] for i in range(len(text)) if i % LINENUMBER == 0]
+        ##textLines = [text[i:i+LINENUMBER] for i in range(len(text)) if i % LINENUMBER == 0]
+        textLines = self.textToList(text)
         if name != '':
             name += ' :'
         textLines.insert(0,name)
