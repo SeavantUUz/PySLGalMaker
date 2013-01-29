@@ -18,9 +18,9 @@ CHOICEBUTTONFROMTOP = 50
 CHOICEBUTTONSIZE = (200,40)
 
 if platform.system() == 'Windows':
-	DECODE = 'gb2312'
-else :
-	DECODE = 'utf8'
+	WINDOWS = 1
+else:
+        WINDOWS = 0
 
 class Button(object):
     ##As a Button,these properties are necessary:
@@ -31,7 +31,10 @@ class Button(object):
         self.pos = pos
         self.size = size
         self.surface = pygame.Surface(size,SRCALPHA)
-        self.label = label.decode(DECODE)
+        if WINDOWS:
+                self.label = label.decode('gb18030')
+        else:
+                self.label = label.decode('utf8')
         self.fontColor = (0xFF,0xFF,0xFF)
 
         ##To make sure the function is'n too long
@@ -254,8 +257,12 @@ class NodeItem(object):
         
     def __updateText(self,name,text):
         self.TextBox.fill(self.bgColor)
-        name = name.decode(DECODE)
-        text = text.decode(DECODE)
+        if WINDOWS:
+                name = name.decode('gb18030')
+                text = text.decode('gb18030')
+        else:
+                name = name.decode('utf8')
+                text = text.decode('utf8')
         ##textLines = [text[i:i+LINENUMBER] for i in range(len(text)) if i % LINENUMBER == 0]
         textLines = self.textToList(text)
         if name != '':
