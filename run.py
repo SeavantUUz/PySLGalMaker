@@ -2,6 +2,7 @@
 import pygame
 from pygame.locals import *
 from sys import exit
+from sys import getsizeof
 import NodeItems
 import Parser
 
@@ -16,7 +17,7 @@ LNode = parser.split('script.sanae')
 dirNode = {}
 for i in LNode:
     dirNode[parser.searchIndex(i)] = i
-
+    
 ## Create an instance of the NodeItem
 ## which contains the musics,images,and
 ## text,buttons etc.

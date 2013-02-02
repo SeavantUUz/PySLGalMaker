@@ -128,6 +128,7 @@ class NodeItem(object):
         self.BGMName = ''
         self.BGChange = 0
         self.ChoiceButtons = {}
+        self.Portraits = {}
 
         self.bgColor = ((0x00,0x00,0x00))
         self.fgColor = ((0xFF,0xFF,0xFF))
@@ -136,7 +137,7 @@ class NodeItem(object):
         self.Surface = surface
         self.Font = self.__initFont()
         self.TextBox , self.TextBoxRect = self.__initTextRect()
-        self.__updateBackground('ErrorIndex.jpg')
+        self.__updateImage('ErrorIndex.jpg')
 
 
     def __initTextRect(self,colorkey = ALPHA):
@@ -163,12 +164,40 @@ class NodeItem(object):
     def update(self,parser):
         self.__updateNodeIndex(parser.getNodeIndex())
         self.__updateBGM(parser.getBGM())
-        self.__updateBackground(parser.getBackground())
+        self.Background = self.__updateImage(parser.getBackground())
         self.__updateText(parser.getName(),parser.getText())
+        
+        self.__updatePortrait(parser.getPortrait())
 
+        
+        ## blit background
         self.Surface.blit(self.Background,(0,0))
+
+        ## Portraits----always are complex
+        ## blit portraits
+        if self.Portraits:
+            for key in self.Portraits:
+                try:
+                    name = self.Portraits[key]['name']
+                    clip_pos = self.Portraits[key]['clip_pos']
+                    size = self.Portraits[key]['size']
+                    screen_pos = self.Portraits[key]['screen_pos']
+                except KeyError:
+                    print 'The portraits argvs are not enough in %d' % self.Index
+                    raise SystemExit
+                else:
+                    portrait = self.__updateImage(name,-1,clip_pos,size)
+                   ## x = (SCREENWIDTH - size[0] + screen_pos[0])/2
+                   ## y = (SCREENHEIGHT - size[1] +  screen_pos[1])/2
+                    x , y = screen_pos
+                    x -= size[0]/2
+                    y -= size[1]/2
+                    self.Surface.blit(portrait,(x,y))
+
+        ## blit textbox
         self.Surface.blit(self.TextBox,self.TextBoxPos)
 
+        ## blit choice buttons
         if parser.getChoice() != []:
             self.__updateChoice(parser.getChoice())
             for i in self.ChoiceButtons.keys():
@@ -183,25 +212,69 @@ class NodeItem(object):
     def __updateNodeIndex(self,index):
         self.Index = index
         
-    def __updateBackground(self,name,colorkey=None):
-        self.BGChange = 1
-        fullname = os.path.join('BG',name)
-        if self.BGName == fullname:
-            self.BGChange = 0
-            return 
+    ## This time will extend the function
+    ## which supported background and portrait
+    def __updateImage(self,name,colorkey=None,clip_pos = None,size = None):
+        if clip_pos and size :
+            fullname = os.path.join('PORTRAIT',name)
+        elif not clip_pos and not size:
+            fullname = os.path.join('BG',name)
+        else:
+            raise SystemExit,message
         try:
             image = pygame.image.load(fullname)
         except pygame.error,message:
             print 'Cannot load image:',name
             raise SystemExit, message
-        self.BGName = fullname
         image = image.convert()
+        if clip_pos:
+            image = image.subsurface((0,0),clip_pos)
+        if size:
+            image = pygame.transform.scale(image,size)
+        else:
+            image = pygame.transform.scale(image,(SCREENWIDTH,SCREENHEIGHT))
         if colorkey is not None:
             if colorkey is -1:
                 colorkey = image.get_at((0,0))
             image.set_colorkey(colorkey, RLEACCEL)
-        image = pygame.transform.scale(image,(SCREENWIDTH,SCREENHEIGHT))
-        self.Background = image
+        return image
+
+        ## portraits is a dict of dict
+        ## like this:
+        ## {'backgound.jpg': {'clip_pos': (100, 100), 'screen_pos': (212, 54), 'name': 'aa.jpg', 'size': (121, 44)}, 'gg.jpg': {'clip_pos': (100, 100), 'screen_pos': (212, 54), 'name': 'aa.jpg', 'size': (121, 44)}, 'aa.jpg': {'clip_pos': (100, 100), 'screen_pos': (212, 54), 'name': 'aa.jpg', 'size': (121, 44)}}
+        ## So complex,I know.....
+        ## handle self.Portraits
+
+    def __updatePortrait(self,portraits):
+        if portraits == {}:
+            self.Portraits = {}
+        else:
+            ## update self.Portraits
+            for key in portraits:
+                if key not in self.Portraits:
+                    temp_dict = {}
+                    temp_dict[key] = portraits[key]
+                    self.Portraits.update(temp_dict)
+                else:
+                    for sec_key in portraits[key]:
+                        self.Portraits[key][sec_key] = portraits[key][sec_key]
+            ## delete items which isn't contained portraitz
+                ## list production can't apply the exceptions
+                ##delete_key = [i for i in self.Portraits.keys() if self.Portraits[i]['flag']]
+            delete_key_list = []
+            for i in self.Portraits.keys():
+                try:
+                    if self.Portraits[i]['flag']:
+                        delete_key_list.append(i)
+                except KeyError:
+                    pass
+            for i in delete_key_list:
+                self.Portraits.pop(i)
+
+
+
+                    
+
 
     def __updateBGM(self,name):
         class NoneSound:
