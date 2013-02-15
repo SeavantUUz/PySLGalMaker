@@ -16,6 +16,11 @@ VSIZE = 30
 ALPHA = 180
 CHOICEBUTTONFROMTOP = 50
 CHOICEBUTTONSIZE = (200,40)
+SETTINGBUTTONSIZE = (50,30)
+LOADBUTTONPOSX = 778
+LOADBUTTONPOSY = SCREENHEIGHT - TEXTRECTHEIGHT - SETTINGBUTTONSIZE[1]/2 
+SAVEBUTTONPOSX = 778
+SAVEBUTTONPOSY = LOADBUTTONPOSY - 40
 
 if platform.system() == 'Windows':
 	WINDOWS = 1
@@ -122,13 +127,14 @@ class NodeItem(object):
                 
         self.BGM = ''
         self.Index = 0
-        self.NextIndex = 0
+        self.NextIndex = 65535
 
         self.BGName = ''
         self.BGMName = ''
         self.BGChange = 0
         self.ChoiceButtons = {}
         self.Portraits = {}
+        self.SettingButtons = self.__initSettingButtons()
 
         self.bgColor = ((0x00,0x00,0x00))
         self.fgColor = ((0xFF,0xFF,0xFF))
@@ -138,6 +144,19 @@ class NodeItem(object):
         self.Font = self.__initFont()
         self.TextBox , self.TextBoxRect = self.__initTextRect()
         self.__updateImage('ErrorIndex.jpg')
+
+
+    def __initSettingButtons(self):
+        dic_settingButtons = {}
+        dic_settingButtons['save'] = Button((\
+            (SAVEBUTTONPOSX,SAVEBUTTONPOSY)),\
+            SETTINGBUTTONSIZE,'SLButton.png',os.path.join('FONT','hksn.ttf'),\
+            'save',None,15)
+        dic_settingButtons['load'] = Button((\
+            (LOADBUTTONPOSX,LOADBUTTONPOSY)),\
+            SETTINGBUTTONSIZE,'SLButton.png',os.path.join('FONT','hksn.ttf'),\
+            'load',None,15)
+        return dic_settingButtons
 
 
     def __initTextRect(self,colorkey = ALPHA):
@@ -163,6 +182,7 @@ class NodeItem(object):
     ## render all items on screen.
     def update(self,parser):
         self.__updateNodeIndex(parser.getNodeIndex())
+        self.__updateNextIndex(parser.getNextIndex())
         self.__updateBGM(parser.getBGM())
         self.Background = self.__updateImage(parser.getBackground())
         self.__updateText(parser.getName(),parser.getText())
@@ -196,6 +216,8 @@ class NodeItem(object):
 
         ## blit textbox
         self.Surface.blit(self.TextBox,self.TextBoxPos)
+        self.SettingButtons['save'].render(self.Surface)
+        self.SettingButtons['load'].render(self.Surface)
 
         ## blit choice buttons
         if parser.getChoice() != []:
@@ -212,6 +234,9 @@ class NodeItem(object):
     def __updateNodeIndex(self,index):
         self.Index = index
         
+    def __updateNextIndex(self,next_index):
+        if next_index:
+            self.NextIndex = next_index
     ## This time will extend the function
     ## which supported background and portrait
     def __updateImage(self,name,colorkey=None,clip_pos = None,size = None):
@@ -219,6 +244,7 @@ class NodeItem(object):
             fullname = os.path.join('PORTRAIT',name)
         elif not clip_pos and not size:
             fullname = os.path.join('BG',name)
+            self.BGName = name
         else:
             raise SystemExit,message
         try:
@@ -270,11 +296,6 @@ class NodeItem(object):
                     pass
             for i in delete_key_list:
                 self.Portraits.pop(i)
-
-
-
-                    
-
 
     def __updateBGM(self,name):
         class NoneSound:
@@ -355,6 +376,9 @@ class NodeItem(object):
     def getNextIndex(self):
         return self.NextIndex
 
+    def getNodeIndex(self):
+        return self.Index
+
     def setNextIndex(self,index = -1):
         if index == -1:
             self.NextIndex = self.Index + 1
@@ -364,3 +388,16 @@ class NodeItem(object):
     def getChoiceButtons(self):
         return self.ChoiceButtons
 
+    def getSettingButtons(self):
+        return self.SettingButtons 
+    def getScreen(self):
+        return self.Surface
+
+    def getBGM(self):
+        return self.BGMName
+
+    def getBackground(self):
+        return self.BGName
+
+    def getPortraits(self):
+        return self.Portraits

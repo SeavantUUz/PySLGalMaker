@@ -9,6 +9,7 @@ class Parser():
         self.Text = ''
         self.ChoiceBranch = []
         self.Portrait = {}
+        self.NextIndex = None
 
         self.RPIndex = self.__InitReParserIndex()
         self.RPBackground = self.__InitReParserBackground()
@@ -17,6 +18,8 @@ class Parser():
 
         self.RPChoice = self.__InitReParserChoice()
         self.RPPortrait = self.__InitReParserPortrait()
+        self.RPNextIndex = self.__InitReParserNextIndex()
+
         ##There of above are REGULAR EXPRESSION,to paser the Gammer which I define
         ##only ONE compile can cut some time,MAYBE.....
 
@@ -25,6 +28,10 @@ class Parser():
         ##TELL re to match any line
         return re.compile(pat,re.M)
     
+    def __InitReParserNextIndex(self):
+        pat = r'''^\[next\s*?=\s*?(\d+?)\]$'''
+        return re.compile(pat,re.M)
+
     def __InitReParserBackground(self):
         pat = r'''^\[background\s*?=\s*?'(.+?)'\]$'''
         return re.compile(pat,re.M)
@@ -60,12 +67,11 @@ class Parser():
                 LNode.append(Node)
                 Node = ''
         LNode.append(Node)
+        script.close()
         return LNode
         
     def parser(self,target):
-        if not self.RPIndex.search(target):
-            print 'Maybe you forget the index in %d' % self.NodeIndex+1
-        else:
+        if self.RPIndex.search(target):
             self.NodeIndex = int(self.RPIndex.search(target).group(0))
 
         if self.RPBackground.search(target):
@@ -96,6 +102,10 @@ class Parser():
                 self.Portrait = self.__parserPortrait(target)
             else:
                 self.Portrait = {}
+
+        self.NextIndex = None
+        if self.RPNextIndex.search(target):
+            self.NextIndex = int(self.RPNextIndex.search(target).group(1))
 
 
         self.ChoiceBranch = self.RPChoice.findall(target)
@@ -141,12 +151,24 @@ class Parser():
             raise SystemExit,message
         return index
 
+    def setNodeIndex(self,index):
+        self.NodeIndex = index
+
     def getNodeIndex(self):
         return self.NodeIndex
+
+    def getNextIndex(self):
+        return self.NextIndex
+
+    def setBackground(self,bg):
+        self.Background = bg
 
     def getBackground(self):
         return self.Background
     
+    def setBGM(self,bgm):
+        self.BGM = bgm
+
     def getBGM(self):
         return self.BGM
 
@@ -159,5 +181,25 @@ class Parser():
     def getChoice(self):
         return self.ChoiceBranch
 
+    def setPortrait(self,portrait):
+        self.Portrait = portrait
+
     def getPortrait(self):
         return self.Portrait
+
+    ## SaveDate file only use these functions
+    ## self.NodeIndex for where to display
+    ## self.Background for what to display
+    ## self.NextIndex for what the pictrue's index
+    ## It's independent,all right?So......
+    ## I seplit it.....
+    def getSaveData(self,target):
+        return (self.NodeIndex,self.Background,self.getPickledData(target))
+
+    ## To avoid comfuse,this function
+    ## must be send an arg
+    def getPickledData(self,target):
+        target_local = target.split('\n')
+        return '\n'.join(target_local[2:])
+        
+
