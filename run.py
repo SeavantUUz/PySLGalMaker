@@ -178,6 +178,8 @@ while True:
                 ##     parser.setBGM(os.path.basename(load_bgm))
                 ##     parser.setPortrait(load_portr)
                 ##     nodeItem.update(parser)
+                if load_data:
+                    continue
 
 
         
