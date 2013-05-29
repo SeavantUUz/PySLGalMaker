@@ -1,10 +1,10 @@
 PySLGalMaker
 ============
 
-** 描述：一个轻量级的galgame引擎，使用语言为python，依赖包为pygame。**
+**描述：一个轻量级的galgame引擎，使用语言为python，依赖包为pygame**
 
 
-** 使用说明：**
+**使用说明**
 
 从github获取程序：
 
